@@ -49,7 +49,22 @@ module.exports.likeCard = (req, res) =>
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
-  );
+  )
+    .then((data) => {
+      console.log(data);
+      return res.status(200).send(data);
+    })
+    .catch((err) => {
+      if (err.name == "ValidationError") {
+        return res.status(400).send({
+          message: `${Object.values(err.errors)
+            .map((error) => error.message)
+            .join(", ")}`,
+        });
+      }
+      console.log("Error:" + err);
+      return res.status(500).send({ message: "Ошибка!!!" });
+    });
 
 // Обрабатываем запрос на удаление Лайк Card================================
 module.exports.dislikeCard = (req, res) =>
@@ -57,4 +72,19 @@ module.exports.dislikeCard = (req, res) =>
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true }
-  );
+  )
+    .then((data) => {
+      console.log(data);
+      return res.status(200).send(data);
+    })
+    .catch((err) => {
+      if (err.name == "ValidationError") {
+        return res.status(400).send({
+          message: `${Object.values(err.errors)
+            .map((error) => error.message)
+            .join(", ")}`,
+        });
+      }
+      console.log("Error:" + err);
+      return res.status(500).send({ message: "Ошибка!!!" });
+    });

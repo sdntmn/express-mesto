@@ -4,30 +4,45 @@ const User = require("../models/modelUser");
 // Обрабатываем запрос на получение данных всех Users ======================
 module.exports.getUsers = (req, res) => {
   return User.find({})
-    .then((users) => res.status(200).send(users))
+    .then((user) => {
+      console.log(user);
+      return res.status(200).send(user);
+    })
 
     .catch((err) => {
       console.log("Ошибка:" + err);
-      res.status(500).send({ message: "Ошибка!!!" });
+      res.status(500).send({ message: err });
     });
 };
 
 // Обрабатываем запрос на получение данных конкретного User по id===========
 module.exports.getUser = (req, res) => {
-  const { _id } = req.params;
-  return User.find(_id)
-    .then((user) => res.status(200).send(user))
+  return User.findById(req.params.id)
+    .then((user) => {
+      console.log(user);
+      if (!user) {
+        return res
+          .status(404)
+          .send({ message: " Пользователь по указанному _id не найден" });
+      }
+      return res.status(200).send(user);
+    })
     .catch((err) => {
+      if (err.name == "ValidationError") {
+        return res.status(404).send({
+          message: `${Object.values(err.errors)
+            .map((error) => error.message)
+            .join(", ")}`,
+        });
+      }
       console.log("Ошибка:" + err);
-      res.status(500).send({ message: "Ошибка!!!" });
+      return res.status(500).send(`Ошибка: ${err}`);
     });
 };
 
 // Обрабатываем запрос на создание User=====================================
-
 module.exports.createUser = (req, res) => {
   return User.create({ ...req.body })
-
     .then((user) => {
       console.log(user);
       return res.status(200).send(user);
@@ -41,7 +56,7 @@ module.exports.createUser = (req, res) => {
         });
       }
       console.log("Error:" + err);
-      return res.status(500).send({ message: "Ошибка!!!" });
+      return res.status(500).send(`Ошибка: ${err}`);
     });
 };
 
