@@ -5,12 +5,11 @@ const User = require("../models/modelUser");
 module.exports.getUsers = (req, res) => {
   return User.find({})
     .then((user) => {
-      console.log(user);
       return res.status(200).send(user);
     })
 
     .catch((err) => {
-      console.log("Ошибка:" + err);
+      console.log(`Ошибка: ${err}`);
       res.status(500).send({ message: err });
     });
 };
@@ -19,7 +18,6 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUser = (req, res) => {
   return User.findById(req.params.id)
     .then((user) => {
-      console.log(user);
       if (!user) {
         return res
           .status(404)
@@ -28,15 +26,17 @@ module.exports.getUser = (req, res) => {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name == "ValidationError") {
-        return res.status(404).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(", ")}`,
-        });
+      console.log(err);
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(400)
+          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
       }
-      console.log("Ошибка:" + err);
-      return res.status(500).send(`Ошибка: ${err}`);
+      if (res.status(500)) {
+        console.log(`Ошибка: ${err}`);
+        res.status(500).send({ message: "Ошибка500" });
+      }
     });
 };
 
@@ -48,41 +48,68 @@ module.exports.createUser = (req, res) => {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name == "ValidationError") {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(", ")}`,
-        });
+      if (err.name === "ValidationError") {
+        return res.status(400).send(`message: ${err}`);
       }
-      console.log("Error:" + err);
+      console.log(`Ошибка: ${err}`);
       return res.status(500).send(`Ошибка: ${err}`);
     });
 };
 
 // Обрабатываем запрос на обновление данных User ===========================
 module.exports.updateUser = (req, res) => {
-  return User.findByIdAndUpdate(req.user._id, { ...req.body }, { new: true })
+  return User.findByIdAndUpdate(
+    req.user._id,
+    { ...req.body },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       console.log(user);
       return res.status(200).send(user);
     })
     .catch((err) => {
-      console.log("Ошибка:" + err);
-      res.status(500).send({ message: "Ошибка!!!" });
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(404)
+          .send({ message: "Пользователь с указанным _id не найден." });
+      }
+      if (err.name === "ValidationError") {
+        console.log(`Ошибка: ${err}`);
+        res.status(400).send({
+          message: "Переданы некорректные данные при обновлении профиля.",
+        });
+      }
+      console.log(`Ошибка: ${err}`);
+      return res.status(500).send({ message: "Ошибка!!!" });
     });
 };
 
 // Обрабатываем запрос на обновление Avatar User ===========================
 module.exports.updateUserAvatar = (req, res) => {
-  return User.findByIdAndUpdate(req.user._id, { ...req.body }, { new: true })
+  return User.findByIdAndUpdate(
+    req.user._id,
+    { ...req.body },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       console.log(user);
       return res.status(200).send(user);
     })
-
     .catch((err) => {
-      console.log("Ошибка:" + err);
-      res.status(500).send({ message: "Ошибка!!!" });
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(404)
+          .send({ message: "Пользователь с указанным _id не найден." });
+      }
+      if (err.name === "ValidationError") {
+        console.log(`Ошибка: ${err}`);
+        res.status(400).send({
+          message: "Переданы некорректные данные при обновлении аватара.",
+        });
+      }
+      console.log(`Ошибка: ${err}`);
+      return res.status(500).send({ message: "Ошибка!!!" });
     });
 };
