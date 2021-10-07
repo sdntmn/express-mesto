@@ -1,5 +1,5 @@
 // Импортируем модель user из ../models/user
-const User = require("../models/modelUser");
+const User = require("../models/userModel");
 
 // Обрабатываем запрос на получение данных всех Users ======================
 module.exports.getUsers = (req, res) => {
