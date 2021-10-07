@@ -33,9 +33,9 @@ module.exports.getUser = (req, res) => {
           .status(400)
           .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
       }
-      if (res.status(500)) {
+      if (res) {
         console.log(`Ошибка: ${err}`);
-        res.status(500).send({ message: "Ошибка500" });
+        res.send({ message: "Ошибка !!!" });
       }
     });
 };
@@ -71,7 +71,7 @@ module.exports.updateUser = (req, res) => {
       if (err.name === "CastError") {
         console.log(`Ошибка: ${err}`);
         res
-          .status(404)
+          .status(400)
           .send({ message: "Пользователь с указанным _id не найден." });
       }
       if (err.name === "ValidationError") {

@@ -27,31 +27,33 @@ module.exports.deleteCard = (req, res) => {
       return res.status(200).send(card);
     })
     .catch((err) => {
-      console.log(`Ошибка: ${err}`);
-      res.status(500).send({ message: "Ошибка!!!" });
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(400)
+          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
+      }
+      if (res) {
+        console.log(`Ошибка: ${err}`);
+        res.status(500).send({ message: "Ошибка!!!" });
+      }
     });
 };
 
 // Обрабатываем запрос на создание Card=====================================
 module.exports.createCard = (req, res) => {
   return Card.create({ ...req.body, owner: req.user._id })
-
     .then((card) => {
-      console.log(card);
       return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => {
-              return error.message;
-            })
-            .join(", ")}`,
-        });
+        return res
+          .status(400)
+          .send(`Переданы некорректные данные при создании карточки: ${err}`);
       }
       console.log(`Ошибка: ${err}`);
-      return res.status(500).send({ message: "Ошибка!!!" });
+      return res.status(500).send(`Ошибка: ${err}`);
     });
 };
 
@@ -70,17 +72,17 @@ module.exports.likeCard = (req, res) => {
       return res.status(200).send(data);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => {
-              return error.message;
-            })
-            .join(", ")}`,
-        });
+      console.log(err);
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(400)
+          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
       }
-      console.log(`Ошибка: ${err}`);
-      return res.status(500).send({ message: "Ошибка!!!" });
+      if (res) {
+        console.log(`Ошибка: ${err}`);
+        res.send({ message: "Ошибка !!!" });
+      }
     });
 };
 
@@ -100,18 +102,17 @@ module.exports.dislikeCard = (req, res) => {
       }
       return res.status(200).send(data);
     })
-
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => {
-              return error.message;
-            })
-            .join(", ")}`,
-        });
+      console.log(err);
+      if (err.name === "CastError") {
+        console.log(`Ошибка: ${err}`);
+        res
+          .status(400)
+          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
       }
-      console.log(`Ошибка: ${err}`);
-      return res.status(500).send({ message: "Ошибка!!!" });
+      if (res) {
+        console.log(`Ошибка: ${err}`);
+        res.send({ message: "Ошибка !!!" });
+      }
     });
 };
