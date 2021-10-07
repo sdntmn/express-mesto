@@ -1,5 +1,5 @@
 // Импортируем модель user из ../models/user
-const Card = require("../models/modelСard");
+const Card = require("../models/cardModel");
 
 // Обрабатываем запрос на получение данных всех Cards ======================
 module.exports.getCards = (req, res) => {
