@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const routerUser = require("./routes/routesUsers");
-const routerCard = require("./routes/routesСards");
+const routerUser = require("./routes/usersRoutes");
+const routerCard = require("./routes/cardsRoutes");
 
 // Слушаем 3000 порт
 const PORT = 5000;
