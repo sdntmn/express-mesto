@@ -1,3 +1,8 @@
+/* eslint-disable consistent-return */
+// Для хеширования пароля понадобится модуль bcryptjs
+const bcrypt = require('bcryptjs');
+// импортируем модуль jsonwebtoken
+const jwt = require('jsonwebtoken');
 // Импортируем модель user из ../models/user
 const User = require("../models/userModel");
 
@@ -42,7 +47,13 @@ module.exports.getUser = (req, res) => {
 
 // Обрабатываем запрос на создание User=====================================
 module.exports.createUser = (req, res) => {
-  return User.create({ ...req.body })
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => {
+      return User.create({
+        email: req.body.email,
+        password: hash,
+      });
+    })
     .then((user) => {
       console.log(user);
       return res.status(200).send(user);
@@ -111,5 +122,33 @@ module.exports.updateUserAvatar = (req, res) => {
       }
       console.log(`Ошибка: ${err}`);
       return res.status(500).send({ message: "Ошибка!!!" });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      // сравниваем переданный пароль и хеш из базы
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        // хеши не совпали — отклоняем промис
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      // аутентификация успешна
+      res.send({ message: 'Всё верно!' });
+    })
+    .catch((err) => {
+      // возвращаем ошибку аутентификации
+      res
+        .status(401)
+        .send({ message: err.message });
     });
 };

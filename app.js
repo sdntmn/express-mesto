@@ -2,6 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const routerUser = require("./routes/usersRoutes");
 const routerCard = require("./routes/cardsRoutes");
+const {
+  createUser,
+  login,
+} = require("./controllers/usersController");
 
 // Слушаем 3000 порт
 const PORT = 5000;
@@ -22,6 +26,9 @@ app.use((req, res, next) => {
 app.use("/", routerUser);
 app.use("/", routerCard);
 
+app.post('/signin', login);
+app.post('/signup', createUser);
+
 // подключаемся к серверу mongo
 mongoose.connect("mongodb://localhost:27017/mestodb", {
   useNewUrlParser: true,
@@ -29,7 +36,7 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
 });
 // запуск сервера
 app.listen(PORT, () => {
-  console.log("Сервер работает и готов к получению данных...");
+  console.log(`Сервер работает и готов к получению данных на ${PORT} порте...`);
 });
 
 // mongodb+srv://admin:111213@cluster0.utnmd.mongodb.net/mestodb
