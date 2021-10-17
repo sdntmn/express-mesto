@@ -1,3 +1,7 @@
+// Для хеширования пароля
+const bcrypt = require("bcryptjs");
+// импортируем модуль jsonwebtoken
+const jwt = require("jsonwebtoken");
 // Импортируем модель user из ../models/user
 const User = require("../models/userModel");
 
@@ -26,12 +30,10 @@ module.exports.getUser = (req, res) => {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       if (err.name === "CastError") {
         console.log(`Ошибка: ${err}`);
-        res
-          .status(400)
-          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
+        res.status(400).send({ message: "Запрос ошибка 1" });
       }
       if (res) {
         console.log(`Ошибка: ${err}`);
@@ -42,9 +44,18 @@ module.exports.getUser = (req, res) => {
 
 // Обрабатываем запрос на создание User=====================================
 module.exports.createUser = (req, res) => {
-  return User.create({ ...req.body })
+  bcrypt
+    .hash(req.body.password, 10)
+    .then((hash) => {
+      return User.create({
+        name: req.body.name,
+        about: req.body.about,
+        avatar: req.body.avatar,
+        email: req.body.email,
+        password: hash,
+      });
+    })
     .then((user) => {
-      console.log(user);
       return res.status(200).send(user);
     })
     .catch((err) => {
@@ -64,7 +75,6 @@ module.exports.updateUser = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      console.log(user);
       return res.status(200).send(user);
     })
     .catch((err) => {
@@ -93,7 +103,6 @@ module.exports.updateUserAvatar = (req, res) => {
     { new: true, runValidators: true }
   )
     .then((user) => {
-      console.log(user);
       return res.status(200).send(user);
     })
     .catch((err) => {
@@ -111,5 +120,36 @@ module.exports.updateUserAvatar = (req, res) => {
       }
       console.log(`Ошибка: ${err}`);
       return res.status(500).send({ message: "Ошибка!!!" });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+        expiresIn: "7d",
+      });
+      console.log(token);
+      if (!user) {
+        return Promise.reject(new Error("Неправильные почта или пароль"));
+      }
+      return res.send({ token });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
+
+// Обрабатываем запрос на получение данных авторизированного Usera =========
+module.exports.getAuthUser = (req, res) => {
+  const id = req.params.userId;
+  return User.findById({ _id: id })
+    .then((user) => {
+      return res.status(200).send(user);
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+      res.status(500).send({ message: err });
     });
 };
