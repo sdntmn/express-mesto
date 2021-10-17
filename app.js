@@ -1,33 +1,27 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 const routerUser = require("./routes/usersRoutes");
 const routerCard = require("./routes/cardsRoutes");
-const {
-  createUser,
-  login,
-} = require("./controllers/usersController");
+const { createUser, login } = require("./controllers/usersController");
+const auth = require("./middlewares/auth");
 
 // Слушаем 3000 порт
 const PORT = 5000;
 
 const app = express();
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "61598c4c1835b4285da6518c",
-  };
+// роуты без авторизации
+app.post("/signin", login);
+app.post("/signup", createUser);
 
-  next();
-});
-
-app.use("/", routerUser);
-app.use("/", routerCard);
-
-app.post('/signin', login);
-app.post('/signup', createUser);
+// роуты с авторизацией
+app.use("/", auth, routerUser);
+app.use("/", auth, routerCard);
 
 // подключаемся к серверу mongo
 mongoose.connect("mongodb://localhost:27017/mestodb", {

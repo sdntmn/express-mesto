@@ -16,9 +16,18 @@ module.exports.getCards = (req, res) => {
 
 // +Обрабатываем запрос на удаление Card ===================================
 module.exports.deleteCard = (req, res) => {
-  return Card.findByIdAndRemove({ _id: req.body._id, owner: req.user._id })
+  const userId = req.params.cardId;
+  const ownerUserId = req.user._id;
+  const cardId = req.user._id;
+
+  return Card.findByIdAndRemove({ _id: cardId, owner: ownerUserId })
     .then((card) => {
-      console.log(card);
+      if (userId !== ownerUserId) {
+        return res.status(423).send({
+          message:
+            " Вы не тот за кого себя выдаете, сервер отказывается Вам повиноваться",
+        });
+      }
       if (!card) {
         return res
           .status(404)
@@ -29,9 +38,9 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === "CastError") {
         console.log(`Ошибка: ${err}`);
-        res
-          .status(400)
-          .send({ message: "Запрос к серверу содержит синтаксическую ошибку" });
+        res.status(400).send({
+          message: "Запрос к серверу содержит синтаксическую ошибку",
+        });
       }
       if (res) {
         console.log(`Ошибка: ${err}`);
@@ -63,7 +72,7 @@ module.exports.likeCard = (req, res) => {
     $addToSet: { likes: req.user._id },
   })
     .then((data) => {
-      console.log(data);
+      // console.log(data);
       if (!data) {
         return res
           .status(404)
@@ -72,7 +81,7 @@ module.exports.likeCard = (req, res) => {
       return res.status(200).send(data);
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       if (err.name === "CastError") {
         console.log(`Ошибка: ${err}`);
         res
@@ -94,7 +103,7 @@ module.exports.dislikeCard = (req, res) => {
     { new: true }
   )
     .then((data) => {
-      console.log(data);
+      // console.log(data);
       if (!data) {
         return res
           .status(404)
@@ -103,7 +112,7 @@ module.exports.dislikeCard = (req, res) => {
       return res.status(200).send(data);
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       if (err.name === "CastError") {
         console.log(`Ошибка: ${err}`);
         res
