@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema({
     default: "Жак-Ив Кусто",
     minlength: 2,
     maxlength: 30,
-    required: true,
   },
   about: {
     type: String,
@@ -20,6 +19,17 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    validate: {
+      validator(v) {
+        // eslint-disable-next-line no-useless-escape
+        return /https?:\/\/\S+(www)?([\w\.]+)\.([a-z]{2,6}\.?)(\/[\w\.]*)*\/?$/.test(
+          v
+        );
+      },
+      message: (props) => {
+        return `${props.value} Неправильный формат ссылки`;
+      },
+    },
     default:
       "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
   },
