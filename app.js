@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
-const { errors } = require("celebrate");
+const { errors, celebrate, Joi } = require("celebrate");
 const routerUser = require("./routes/usersRoutes");
 const routerCard = require("./routes/cardsRoutes");
 const { createUser, login } = require("./controllers/usersController");
@@ -19,8 +19,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // роуты без авторизации
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.post(
+  "/signin",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }),
+  }),
+  login
+);
+app.post(
+  "/signup",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }),
+  }),
+  createUser
+);
 
 // роуты с авторизацией
 app.use("/", auth, routerUser);

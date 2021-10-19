@@ -1,3 +1,5 @@
+const { celebrate, Joi } = require("celebrate");
+
 const router = require("express").Router();
 
 const {
@@ -16,8 +18,25 @@ router.get("/users/me", getAuthUser);
 router.get("/users/:id", getUser);
 
 // обновление данных пользователя
-router.patch("/users/me", updateUser);
+router.patch(
+  "/users/me",
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2),
+    }),
+  }),
+  updateUser
+);
 // обновление аватар
-router.patch("/users/me/avatar", updateUserAvatar);
+router.patch(
+  "/users/me/avatar",
+  celebrate({
+    body: Joi.object().keys({
+      avatar: Joi.string().required().min(2),
+    }),
+  }),
+  updateUserAvatar
+);
 
 module.exports = router;

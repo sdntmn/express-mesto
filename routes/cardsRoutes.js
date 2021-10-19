@@ -26,15 +26,8 @@ router.post(
 router.delete(
   "/cards/:cardId",
   celebrate({
-    // валидируем параметры
-    params: Joi.object().keys({
-      postId: Joi.string().alphanum().length(24),
-    }),
-    headers: Joi.object().keys({
-      // валидируем заголовки
-    }),
-    query: Joi.object().keys({
-      // валидируем query
+    body: Joi.object().keys({
+      _id: Joi.string().required().length(24),
     }),
   }),
   deleteCard
