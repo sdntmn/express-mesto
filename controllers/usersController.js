@@ -100,7 +100,11 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         return Promise.reject(new Error("Неправильные почта или пароль"));
       }
-      return res.send({ token });
+      return res.cookie("jwt", token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      });
     })
     .catch(() => {
       throw new UnauthorizedErr401({
