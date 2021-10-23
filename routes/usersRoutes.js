@@ -20,7 +20,7 @@ router.get(
   "/users/:id",
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().length(24).hex(),
+      id: Joi.string().length(24).hex(),
     }),
   }),
   getUser
@@ -42,13 +42,15 @@ router.patch(
   "/users/me/avatar",
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().custom((value) => {
-        if (!validator.isURL(value, { require_protocol: true })) {
-          throw new Error("Неправильный формат ссылки");
-        } else {
-          return value;
-        }
-      }),
+      avatar: Joi.string()
+        .required()
+        .custom((value) => {
+          if (!validator.isURL(value, { require_protocol: true })) {
+            throw new Error("Неправильный формат ссылки");
+          } else {
+            return value;
+          }
+        }),
     }),
   }),
   updateUserAvatar
