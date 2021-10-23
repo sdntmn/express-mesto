@@ -14,17 +14,16 @@ module.exports.getCards = (req, res, next) => {
 
 // +Обрабатываем запрос на удаление Card ===================================
 module.exports.deleteCard = (req, res, next) => {
-  console.log(req.params);
-  Card.findById(req.params)
+  const { cardId } = req.params;
+  Card.findById(cardId)
     .orFail(() => {
-      return new NotFoundError404("Карточка с указанным _id не найдена!!!.");
+      throw new NotFoundError404("Карточка с указанным _id не найдена!!!.");
     })
     .then((card) => {
-      console.log(card);
       if (card.owner.toString() !== req.user._id) {
         next(
           new ForbiddenErr403({
-            message: "Карточка с указанным _id не найдена!!!.",
+            message: "Нельзя удалять чужие карточки",
           })
         );
       } else {
