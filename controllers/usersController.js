@@ -5,7 +5,9 @@ const jwt = require("jsonwebtoken");
 // Импортируем модель user из ../models/user
 const User = require("../models/userModel");
 
-const NotFoundError = require("../errors/not-found-err");
+const NotFoundError404 = require("../errors/not-found-err-404");
+const ConflictError409 = require("../errors/conflict-err-409");
+const UnauthorizedErr401 = require("../errors/unauthorized-err-401");
 
 // Обрабатываем запрос на получение данных всех Users ======================
 module.exports.getUsers = (req, res, next) => {
@@ -22,7 +24,7 @@ module.exports.getUser = (req, res, next) => {
   return User.findById(req.params.id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError({
+        throw new NotFoundError404({
           message: " Пользователь по указанному _id не найден",
         });
       }
@@ -44,9 +46,20 @@ module.exports.createUser = (req, res, next) => {
         password: hash,
       });
     })
-    .then((user) => {
-      console.log(user);
-      return res.status(200).send(user);
+    .catch((err) => {
+      if (err.name === "MongoServerError" && err.code === 11000) {
+        throw new ConflictError409({ message: "Уже существует в базе email" });
+      }
+    })
+    .then(() => {
+      return res.status(200).send({
+        user: {
+          name: req.body.name,
+          about: req.body.about,
+          avatar: req.body.avatar,
+          email: req.body.email,
+        },
+      });
     })
     .catch(next);
 };
@@ -89,12 +102,17 @@ module.exports.login = (req, res, next) => {
       }
       return res.send({ token });
     })
+    .catch(() => {
+      throw new UnauthorizedErr401({
+        message: "Неправильные почта или пароль",
+      });
+    })
     .catch(next);
 };
 
 // Обрабатываем запрос на получение данных авторизированного Usera =========
 module.exports.getAuthUser = (req, res, next) => {
-  const id = req.params.userId;
+  const id = req.user._id;
   return User.findById({ _id: id })
     .then((user) => {
       return res.status(200).send(user);

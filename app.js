@@ -6,8 +6,7 @@ const routerUser = require("./routes/usersRoutes");
 const routerCard = require("./routes/cardsRoutes");
 const { createUser, login } = require("./controllers/usersController");
 const auth = require("./middlewares/auth");
-const NotFoundError = require("./errors/not-found-err");
-const BadRequestError = require("./errors/bad-request-err");
+const NotFoundError = require("./errors/not-found-err-404");
 
 // Слушаем 3000 порт
 const PORT = 5000;
@@ -33,6 +32,9 @@ app.post(
   "/signup",
   celebrate({
     body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string(),
       email: Joi.string().required().email(),
       password: Joi.string().required().min(8),
     }),
@@ -43,26 +45,16 @@ app.post(
 // роуты с авторизацией
 app.use("/", auth, routerUser);
 app.use("/", auth, routerCard);
+app.use((req, res, next) => {
+  next(new NotFoundError("Маршрут не найден"));
+});
 
 app.use(errors()); // обработчик ошибок celebrate
 
 app.use((err, req, res, next) => {
+  console.log(err.statusCode);
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
-  console.log(err.name);
-  if (err.name === "MongoServerError" && err.code === 11000) {
-    res.status(409).send({ message: "Уже существует в базе email" });
-  }
-  if (err.name === "ValidationError") {
-    throw new BadRequestError({
-      message: "Переданы некорректные данные.",
-    });
-  }
-  if (err.name === "CastError") {
-    throw new NotFoundError({
-      message: "Данные не найдены.",
-    });
-  }
   res.status(statusCode).send({
     // проверяем статус и выставляем сообщение в зависимости от него
     message: statusCode === 500 ? "На сервере произошла ошибка" : message,

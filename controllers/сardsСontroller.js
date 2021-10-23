@@ -1,6 +1,7 @@
 // Импортируем модель user из ../models/user
 const Card = require("../models/cardModel");
-const NotFoundError = require("../errors/not-found-err");
+const NotFoundError404 = require("../errors/not-found-err-404");
+const ForbiddenErr403 = require("../errors/forbidden-err-403");
 
 // Обрабатываем запрос на получение данных всех Cards ======================
 module.exports.getCards = (req, res, next) => {
@@ -13,24 +14,24 @@ module.exports.getCards = (req, res, next) => {
 
 // +Обрабатываем запрос на удаление Card ===================================
 module.exports.deleteCard = (req, res, next) => {
-  const userId = req.params.cardId;
-  const ownerUserId = req.user._id;
-  const cardId = req.user._id;
-
-  return Card.findByIdAndRemove({ _id: cardId, owner: ownerUserId })
+  console.log(req.params);
+  Card.findById(req.params)
+    .orFail(() => {
+      return new NotFoundError404("Карточка с указанным _id не найдена!!!.");
+    })
     .then((card) => {
-      if (userId !== ownerUserId) {
-        return res.status(423).send({
-          message:
-            " Вы не тот за кого себя выдаете, сервер отказывается Вам повиноваться",
+      console.log(card);
+      if (card.owner.toString() !== req.user._id) {
+        next(
+          new ForbiddenErr403({
+            message: "Карточка с указанным _id не найдена!!!.",
+          })
+        );
+      } else {
+        Card.deleteOne(card).then(() => {
+          return res.send({ data: card });
         });
       }
-      if (!card) {
-        throw new NotFoundError({
-          message: "Карточка с указанным _id не найдена.",
-        });
-      }
-      return res.status(200).send(card);
     })
     .catch(next);
 };
@@ -51,7 +52,7 @@ module.exports.likeCard = (req, res, next) => {
   })
     .then((data) => {
       if (!data) {
-        throw new NotFoundError({
+        throw new NotFoundError404({
           message: "Передан несуществующий _id карточки.",
         });
       }
@@ -69,7 +70,7 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((data) => {
       if (!data) {
-        throw new NotFoundError({
+        throw new NotFoundError404({
           message: "Передан несуществующий _id карточки.",
         });
       }

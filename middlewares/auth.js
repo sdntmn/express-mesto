@@ -1,12 +1,14 @@
 // импортируем модуль jsonwebtoken
 const jwt = require("jsonwebtoken");
 
+const UnauthorizedErr401 = require("../errors/unauthorized-err-401");
+
 module.exports = (req, res, next) => {
   // достаём авторизационный заголовок
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(401).send({ message: "Необходима авторизация" });
+    return next(new UnauthorizedErr401({ message: "Необходима авторизация" }));
   }
   const token = authorization.replace("Bearer ", "");
   let payload;
@@ -14,10 +16,9 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, "some-secret-key");
   } catch (err) {
-    return res.status(404).send({ message: "NotFound" });
+    return next(new UnauthorizedErr401({ message: "Необходима авторизация" }));
   }
 
   req.user = payload;
-  console.log(`${req.user} '22'`);
   return next(); // пробрасываем запрос дальше
 };
