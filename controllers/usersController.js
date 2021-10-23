@@ -58,7 +58,7 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "MongoServerError" && err.code === 11000) {
-        throw new ConflictError409({ message: "Уже существует в базе email" });
+        next(new ConflictError409({ message: "Уже существует в базе email" }));
       } else {
         next(err);
       }
