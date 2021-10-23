@@ -46,11 +46,6 @@ module.exports.createUser = (req, res, next) => {
         password: hash,
       });
     })
-    .catch((err) => {
-      if (err.name === "MongoServerError" && err.code === 11000) {
-        throw new ConflictError409({ message: "Уже существует в базе email" });
-      }
-    })
     .then(() => {
       return res.status(200).send({
         user: {
@@ -61,7 +56,13 @@ module.exports.createUser = (req, res, next) => {
         },
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "MongoServerError" && err.code === 11000) {
+        throw new ConflictError409({ message: "Уже существует в базе email" });
+      } else {
+        next(err);
+      }
+    });
 };
 
 // Обрабатываем запрос на обновление данных User ===========================
@@ -100,11 +101,13 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         return Promise.reject(new Error("Неправильные почта или пароль"));
       }
-      return res.cookie("jwt", token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-        sameSite: true,
-      });
+      return res
+        .cookie("jwt", token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: "Авторизация прошла успешно" });
     })
     .catch(() => {
       throw new UnauthorizedErr401({
