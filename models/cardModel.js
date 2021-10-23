@@ -1,3 +1,5 @@
+const validator = require("validator");
+
 const mongoose = require("mongoose");
 
 // Схема card преобразуем схему в модель и перадаем её в контроллер
@@ -11,7 +13,12 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    required: true,
+    validate: {
+      validator: (value) => {
+        return validator.isURL(value);
+      },
+      message: "Не корректный URL",
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
