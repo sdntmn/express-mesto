@@ -11,7 +11,7 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const NotFoundError = require("./errors/not-found-err-404");
 
 // Слушаем 3000 порт
-const PORT = 5000;
+const PORT = 3000;
 
 const app = express();
 app.use(cookieParser());
@@ -80,7 +80,5 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
 });
 // запуск сервера
 app.listen(PORT, () => {
-  console.log(`Сервер работает и готов к получению данных на ${PORT} порте...`);
+  console.log(`Сервер работает и готов к получению данных на ${PORT} port...`);
 });
-
-// mongodb+srv://admin:111213@cluster0.utnmd.mongodb.net/mestodb
