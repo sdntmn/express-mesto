@@ -14,13 +14,11 @@ module.exports.getCards = (req, res, next) => {
 
 // +Обрабатываем запрос на удаление Card ===================================
 module.exports.deleteCard = (req, res, next) => {
-  console.log(req.params);
   Card.findById(req.params)
     .orFail(() => {
       return new NotFoundError404("Карточка с указанным _id не найдена!!!.");
     })
     .then((card) => {
-      console.log(card);
       if (card.owner.toString() !== req.user._id) {
         next(
           new ForbiddenErr403({

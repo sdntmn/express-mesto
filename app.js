@@ -32,6 +32,7 @@ app.post(
   }),
   login
 );
+
 app.post(
   "/signup",
   celebrate({
@@ -83,5 +84,3 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
 app.listen(PORT, () => {
   console.log(`Сервер работает и готов к получению данных на ${PORT} порте...`);
 });
-
-// mongodb+srv://admin:111213@cluster0.utnmd.mongodb.net/mestodb
