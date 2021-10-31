@@ -7,6 +7,7 @@ const routerUser = require("./routes/usersRoutes");
 const routerCard = require("./routes/cardsRoutes");
 const { createUser, login } = require("./controllers/usersController");
 const auth = require("./middlewares/auth");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const NotFoundError = require("./errors/not-found-err-404");
 
 // Слушаем 3000 порт
@@ -17,6 +18,8 @@ app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(requestLogger); // подключаем логгер запросов
 
 // роуты без авторизации
 app.post(
@@ -55,6 +58,8 @@ app.use("/", auth, routerCard);
 app.use((req, res, next) => {
   next(new NotFoundError("Маршрут не найден"));
 });
+
+app.use(errorLogger); // подключаем логгер ошибок
 
 app.use(errors()); // обработчик ошибок celebrate
 
